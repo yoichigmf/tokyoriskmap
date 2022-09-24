@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <link href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/flatgeobuf@3.22.0/dist/flatgeobuf-geojson.min.js"></script>
+    <style>
+        body { margin:0; padding:0; }
+
+ 
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+#basemaps-selecter {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0);
+        z-index:255;
+      }
+      #basemaps {
+        font-size: 16px;
+        padding: 4px 8px;
+      }
+
+#tablearea {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 200px;
+  z-index:255;
+  box-shadow: 0 0 50px -25px black;
+  background: white;
+  display:none;
+
+}
+
+</style>
+
+
+<style>
+    .rounded-rect {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 50px -25px black;
+    }
+     
+    .flex-center {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+     
+    .flex-center.left {
+    left: 0px;
+    }
+     
+    .flex-center.right {
+    right: 0px;
+    }
+     
+    .sidebar-content {
+    position: absolute;
+    width: 95%;
+    height: 95%;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+    color: gray;
+    }
+     
+    .sidebar-toggle {
+    position: absolute;
+    width: 1.3em;
+    height: 1.3em;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+     
+    .sidebar-toggle.left {
+    right: -1.5em;
+    }
+     
+    .sidebar-toggle.right {
+    left: -1.5em;
+    }
+     
+    .sidebar-toggle:hover {
+    color: #0aa1cf;
+    cursor: pointer;
+    }
+     
+    .sidebar {
+    transition: transform 1s;
+    z-index: 1;
+    width: 300px;
+    height: 100%;
+    }
+     
+    /*
+    The sidebar styling has them "expanded" by default, we use CSS transforms to push them offscreen
+    The toggleSidebar() function removes this class from the element in order to expand it.
+    */
+    .left.collapsed {
+    transform: translateX(-295px);
+    }
+     
+    .right.collapsed {
+    transform: translateX(295px);
+    }
+    </style>
+</head>
+<body>
+    <div id="map">
+
+        <div id="basemaps-selecter">
+
+            <select id="basemaps">
+            <!-- <option value="blank">地理院タイル白地図</option>  -->
+              <option value="pale">地理院タイル skelton</option>
+           <!--  <option value="std">地理院タイル標準</option>
+              <option value="gsi_3d">地理院タイル3D風</option>
+              <option value="std_vertical">地理院タイル標準縦書きあり</option>
+           -->
+              <option value="gsi_photo">地理院タイル写真</option>
+              </select>
+          
+          </div>
+
+
+        <div id="left" class="sidebar flex-center left collapsed">
+            <div class="sidebar-content rounded-rect flex-center">
+            Left Sidebar
+            <div
+            class="sidebar-toggle rounded-rect left"
+            onclick="toggleSidebar('left')"
+            >
+            &rarr;
+            </div>
+
+            </div>
+        </div>
+
+
+        <div id="right" class="sidebar flex-center right collapsed">
+            <div class="sidebar-content rounded-rect flex-center">
+            Right Sidebar
+            <div
+            class="sidebar-toggle rounded-rect right"
+            onclick="toggleSidebar('right')"
+            >
+            &larr;
+            </div>
+            </div>
+        </div>
+
+        <div id="tablearea" >
+
+        </div>
+
+
+
+
+
+    </div>
+
+ <script>
+
+const base_maps = {
+  "blank": './blank.json',
+  "pale": './pale.json',
+  "std":'./std_2.json',
+  "gsi_3d":'./building3d.json',
+  "std_vertical":'./std_vertical.json',
+   "gsi_photo": {
+        version: 8,
+        sources: {
+            gsi_photo: {
+                type: 'raster',
+                tiles: [
+                    'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+                ],
+                tileSize: 256,
+                attribution:
+                    '国土地理院',
+            },
+        },
+        layers: [
+            {
+                id: 'gsi_photo',
+                type: 'raster',
+                source: 'gsi_photo',
+                minzoom: 5,
+                maxzoom: 18,
+            },
+        ],
+    }
+};
+
+
+
+
+function toggleSidebar(id) {
+    var elem = document.getElementById(id);
+    var classes = elem.className.split(' ');
+    var collapsed = classes.indexOf('collapsed') !== -1;
+     
+    var padding = {};
+     
+    if (collapsed) {
+    // Remove the 'collapsed' class from the class list of the element, this sets it back to the expanded state.
+    classes.splice(classes.indexOf('collapsed'), 1);
+     
+    padding[id] = 300; // In px, matches the width of the sidebars set in .sidebar CSS class
+    map.easeTo({
+    padding: padding,
+    duration: 1000 // In ms, CSS transition duration property for the sidebar matches this value
+    });
+    } else {
+    padding[id] = 0;
+    // Add the 'collapsed' class to the class list of the element
+    classes.push('collapsed');
+     
+    map.easeTo({
+    padding: padding,
+    duration: 1000
+    });
+    }
+     
+    // Update the class list on the element
+    elem.className = classes.join(' ');
+    }
+
+
+    var map = new maplibregl.Map({
+            container: "map",
+            style: './skeleton.json',
+            center: [139.581367, 35.695671],
+            zoom: 11,
+            maxZoom: 18,
+        });
+
+
+  
+
+        const setBasemap = (name) => {
+            // Instantiate the given basemap layer.
+         //   map.setStyle(base_maps[name]);
+         if (name == 'gsi_photo'){
+            console.log('gsi');
+            map.setLayoutProperty(name, 'visibility', 'visible');
+         }
+         else {
+          map.setLayoutProperty('gsi_photo', 'visibility', 'none');
+         }
+
+        };
+
+
+  
+
+//setBasemap('pale');
+
+
+
+
+ 
+const basemapsSelectElement = document.querySelector("#basemaps");
+
+        basemapsSelectElement.addEventListener("change", (e) => {
+            setBasemap(e.target.value);
+ 
+           // map.triggerRepaint();
+
+        });
+
+
+
+
+
+map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl() );
+
+
+ </script> 
+
+
+
+<script type="module">
+
+
+
+
+
+        const response = await fetch("./data/tokyorisk5.fgb")
+        map.on("load", async () => {
+
+                  
+        map.addSource('gsi_raster', {
+  
+              'type': 'raster',
+              tiles: [
+                    'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+                ],
+              'tileSize': 256,
+               'attribution':
+               '国土地理院',
+  
+           });
+
+  map.addLayer({
+ 'id':'gsi_photo',
+ 'type':'raster',
+ 'source':'gsi_raster',
+ 'minzoom':5,
+ 'maxzoom':18,
+ 'layout':{
+ 'visibility':'none'
+ },
+ paint:{   "raster-opacity": 1.0}
+
+});
+
+
+
+            const fc = {type: "FeatureCollection", features: []};
+            for await (const f of flatgeobuf.deserialize(response.body))
+                fc.features.push(f);
+
+            map.addSource("tokyorisk", {
+               type: "geojson",
+               data: fc,
+            });
+            map.addLayer({
+                id: "sougou_kikendo",
+                type: "fill",
+                source: "tokyorisk",
+                paint: {
+
+                  "fill-color": {
+                    property: "総合危険度_ランク",
+                    type: 'categorical',
+                    stops: [
+                               [1, '#95d3e8'],
+                               [2, '#70ac70'],
+                               [3, '#da8312'],
+                               [4, '#e92b14'],
+                               [5, '#590b10'],
+                           ]
+                  },
+                  
+                  
+                 
+                  "fill-opacity": 0.6,
+                },
+            });
+            map.addLayer({
+                id: "risk-line",
+                type: "line",
+                source: "tokyorisk",
+                paint: {
+                  "line-color": "#888888",
+                  "line-opacity": 0.9,
+                  "line-width": 1,
+                },
+            });
+        
+        });
+
+
+        
+        
+// When a click event occurs on a feature in the places layer, open a popup at the
+// location of the feature, with description HTML from its properties.
+map.on('click', 'sougou_kikendo', function (e) {
+//var coordinates = e.features[0].geometry.coordinates.slice();
+console.log('A click event has occurred at ' + e.lngLat);
+
+var tghtml = "<table><TH>項目</TH><TH>値</TH>";
+for ( var key in e.features[0].properties ){
+     tghtml = tghtml + "<TR><td>" + key + "</td><td>" + e.features[0].properties[key] + "</td></tr>";
+}
+
+tghtml = tghtml + "</table>";
+//var description = e.features[0].properties["総合危険度_ランク"];
+
+ 
+
+//console.log(e.features[0].properties["history"]);
+ // Ensure that if the map is zoomed out such that multiple
+ // copies of the feature are visible, the popup appears
+ // over the copy being pointed to.
+ //while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+ //coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+ //}
+  
+ new maplibregl.Popup()
+ .setLngLat(e.lngLat)
+ .setHTML(tghtml)
+ .addTo(map);
+ });
+        
+
+    </script>
+</body>
+</html>
