@@ -174,37 +174,6 @@
 
  <script>
 
-const base_maps = {
-  "blank": './blank.json',
-  "pale": './pale.json',
-  "std":'./std_2.json',
-  "gsi_3d":'./building3d.json',
-  "std_vertical":'./std_vertical.json',
-   "gsi_photo": {
-        version: 8,
-        sources: {
-            gsi_photo: {
-                type: 'raster',
-                tiles: [
-                    'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
-                ],
-                tileSize: 256,
-                attribution:
-                    '国土地理院',
-            },
-        },
-        layers: [
-            {
-                id: 'gsi_photo',
-                type: 'raster',
-                source: 'gsi_photo',
-                minzoom: 5,
-                maxzoom: 18,
-            },
-        ],
-    }
-};
-
 
 
 
@@ -265,10 +234,6 @@ function toggleSidebar(id) {
         };
 
 
-  
-
-//setBasemap('pale');
-
 
 
 
@@ -290,14 +255,12 @@ map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 map.addControl(new maplibregl.ScaleControl() );
 
 
- </script> 
+loadfgb();
 
 
 
-<script type="module">
-
-
-
+//  load flat geobuff file
+async function loadfgb(){
 
 
         const response = await fetch("./data/tokyorisk5.fgb")
@@ -374,7 +337,7 @@ map.addControl(new maplibregl.ScaleControl() );
             });
         
         });
-
+}
 
         
         
