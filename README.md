@@ -4,6 +4,7 @@
 https://www.toshiseibi.metro.tokyo.lg.jp/bosai/chousa_6/home.htm
 
 https://www.toshiseibi.metro.tokyo.lg.jp/bosai/chousa_6/download/all2.zip
+
 町丁目別地域危険度一覧表のshapeファイルをFlatGeobufに変換
 
 Githubリポジトリ内におき利用可能にする
