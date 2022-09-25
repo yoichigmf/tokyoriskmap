@@ -213,10 +213,32 @@
     
       <input type="checkbox" id="kasai_kikendo"  />
       <label for="kasai_kikendo">火災危険度ランク</label>
+
+      <input type="checkbox" id="jiban"  />
+      <label for="jiban">地盤分類</label>
+
     </nav>
 
+    <table>
 
+    <tr><td>
+     <div id="rank">
+      <h5>危険度ランク</h5>
+      <br>
     <img src="./data/rank.png"  width="250">
+    </div>
+    </td></tr>
+
+    <tr><td>
+
+    <div id="jiban">
+      <h5>地番分類</h5>
+      <br>
+    <img src="./data/jibanlegend.png"  >
+    </div>
+  </td></tr>
+
+    </table>
 
 
             <div
@@ -439,6 +461,40 @@ async function loadfgb(){
                                [3, '#da8312'],
                                [4, '#e92b14'],
                                [5, '#590b10'],
+                           ]
+                  },
+             
+                  
+                 
+                  "fill-opacity": 0.6,
+                },
+                layout: {
+                          visibility: 'none'
+                  },  
+            });
+
+            map.addLayer({
+                id: "jiban",
+                type: "fill",
+                source: "tokyorisk",
+                paint: {
+
+                  "fill-color": {
+                    property: "地盤分類",
+                    type: 'categorical',
+                    stops: [
+                               ["沖積低地1", '#4f58a0'],
+                               ["沖積低地2", '#7cc24a'],
+                               ["沖積低地3", '#dbd752'],
+                               ["沖積低地4", '#dbad5a'],
+                               ["沖積低地5", '#d0413d'],
+                               ["丘陵", '#be8667'],
+                               ["山地", '#815b46'],
+                               ["台地1", '#65a8d1'],
+                               ["台地2", '#53b14c'],
+                               ["谷底低地1", '#e388a3'],
+                               ["谷底低地2", '#b8c3ce'],
+                               ["谷底低地3", '#9098a1'],
                            ]
                   },
              
