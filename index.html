@@ -197,6 +197,7 @@
             <div
             class="sidebar-toggle rounded-rect left"
             onclick="toggleSidebar('left')"
+            id="la"
             >
             &rarr;
             </div>
@@ -255,6 +256,7 @@
             <div
             class="sidebar-toggle rounded-rect right"
             onclick="toggleSidebar('right')"
+            id="ra"
             >
             &larr;
             </div>
@@ -280,6 +282,8 @@ function toggleSidebar(id) {
     var elem = document.getElementById(id);
     var classes = elem.className.split(' ');
     var collapsed = classes.indexOf('collapsed') !== -1;
+
+    var left =  classes.indexOf('left') !== -1;
      
     var padding = {};
      
@@ -288,6 +292,18 @@ function toggleSidebar(id) {
     classes.splice(classes.indexOf('collapsed'), 1);
      
     padding[id] = 300; // In px, matches the width of the sidebars set in .sidebar CSS class
+
+    if ( left ){
+      //alert('left');
+      var lftbtn = document.getElementById("la");
+      lftbtn.innerHTML =  "&larr;";
+    }
+    else {
+      //alert('right');
+      var rigbtn = document.getElementById("ra");
+      rigbtn.innerHTML =  "&rarr;";
+    }
+
     map.easeTo({
     padding: padding,
     duration: 1000 // In ms, CSS transition duration property for the sidebar matches this value
@@ -296,6 +312,18 @@ function toggleSidebar(id) {
     padding[id] = 0;
     // Add the 'collapsed' class to the class list of the element
     classes.push('collapsed');
+
+    if ( left ){
+
+var lftbtn = document.getElementById("la");
+lftbtn.innerHTML =  "&rarr;";
+}
+else {
+//alert('right');
+var rigbtn = document.getElementById("ra");
+rigbtn.innerHTML =  "&larr;";
+}
+
      
     map.easeTo({
     padding: padding,
